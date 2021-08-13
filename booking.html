@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tez Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="header">
+    <h1>Tez Hotel</h1>
+</div>
+<div class="row">
+    <div class="col-3 col-s-3 menu">
+        <ul>
+            <li>Welcome <script>document.write(localStorage.getItem("currentUserName"))</script></li>
+            <a href="booking.html"><li>Book Room</li></a>
+            <a href="manage.html"><li>Manage Bookings</li></a>
+            <a href="index.html"><li>Logout</li></a>
+        </ul>
+    </div>
+    <div class="col-6 col-s-9">
+        <h2>Book Room</h2>
+        <div class="container">
+        <form id="booking">
+            <label for="from">From </label>
+            <input type="date" id="from" placeholder="From" required/>
+            <label for="to">To </label>
+            <input type="date" id="to" placeholder="To" required/>
+            <label for="to">Room Type </label>
+            <select id="room-type" name="room-type">
+                <option value="Single room">Single room</option>
+                <option value="Double room">Double room</option>
+            </select>
+            <label for="adult">Adults</label>
+            <select id="adult" name="adult">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <label for="children">Children</label>
+            <select id="children" name="children">
+                <option value="-">-</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+            <input type="reset" id="reset" class="btn" value="Clear All">
+            <button id="submit">Book</button>
+        </form>
+        </div>
+    </div>
+    <div class="col-3 col-s-12">
+        <div class="aside">
+            <h2>Take advantage of our seasonal specials.</h2>
+            <img src="images/side.jpg" />
+
+            <p class="text">The concept and service of the best luxury hotels in Asturias in our sophisticated Urban Double and Unique Junior Suite rooms, with the possibility of enjoying a furnished terrace in our Double Urban Loft and Unique Junior Loft Suite.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>&copy; Copyright 2020, Tez Hotels</p>
+</div>
+
+</body>
+<script>
+    if(localStorage.getItem("currentUser") === null){
+        alert("You have to login")
+        window.location.href = "index.html";
+    }
+    let form = document.getElementById("booking")
+    let email = localStorage.getItem("currentUser")
+    let name = localStorage.getItem("currentUserName")
+    let from = document.getElementById("from")
+    let to = document.getElementById("to")
+    let adult = document.getElementById("adult")
+    let children = document.getElementById("children")
+    let db;
+
+    window.onload = function() {
+        let request = window.indexedDB.open('TezDB', 1)
+        request.onerror = function () {
+        };
+        request.onsuccess = function () {
+            db = request.result;
+        };
+        form.onsubmit = booking;
+
+        function booking(e) {
+            let bookingData = {
+                from: from.value,
+                to: to.value,
+                name: name,
+                email: email,
+                adult: adult.value,
+                children: children.value
+            }
+            let transaction = db.transaction(['booking'], 'readwrite')
+            let objectStore = transaction.objectStore('booking')
+            objectStore.add(bookingData).onsuccess  = function () {
+                alert("Book Successful");
+
+                window.location.href = "manage.html";
+
+            };
+            transaction.oncomplete = function () {
+                console.log('Transaction completed: database modification finished.');
+
+            };
+            transaction.onerror = function () {
+                console.log('Transaction not opened due to error');
+            };
+        }
+    }
+
+</script>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tez Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="header">
+    <h1>Tez Hotel</h1>
+</div>
+<div class="row">
+    <div class="col-3 col-s-3 menu">
+        <ul>
+            <a href="index.html"><li>Home</li></a>
+            <a href="registration.html"><li>Registration</li></a>
+            <a href="login.html"><li>Login</li></a>
+            <a href="contact.html"><li>Contact Us</li></a>
+        </ul>
+    </div>
+    <div class="col-6 col-s-9">
+        <h2>Registration</h2>
+        <div class="container">
+            <form id="register">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" placeholder="Email" required/>
+                <label for="pass">Password</label>
+                <input type="password" id="pass" placeholder="Password" required/>
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Name" required/>
+                <label for="personal">Personal URL</label>
+                <input type="url" id="personal" placeholder="Personal URL" required>
+                <label for="gender">Gender</label>
+                <input type="radio" id="gender" name="gender" value="male" checked> Male
+                <input type="radio" name="gender" value="female"> Female<br/><br/>
+                <label for="doy">Date of year</label>
+                <input type="number" id="doy" name="doy" min="1900" max="2021" step="1" value="2021"/>
+                <label for="comment">Comments</label>
+                <textarea name="comment" id="comment" cols="20" rows="4"></textarea><br><br>
+                <input type="checkbox" id="confirmation">
+                <span>I confirm that the data entered is legit.</span> <br><br>
+                <progress max="100" value="0" id="progress"></progress>
+                <br><br>
+                <input type="reset" id="reset" class="btn" value="Clear All">
+                <button id="submit">Register</button>
+            </form>
+        </div>
+
+    </div>
+    <div class="col-3 col-s-12">
+        <div class="aside">
+            <h2>Take advantage of our seasonal specials.</h2>
+            <img src="images/side.jpg" />
+
+            <p class="text">The concept and service of the best luxury hotels in Asturias in our sophisticated Urban Double and Unique Junior Suite rooms, with the possibility of enjoying a furnished terrace in our Double Urban Loft and Unique Junior Loft Suite.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>&copy; Copyright 2020, Tez Hotels</p>
+</div>
+
+</body>
+<script src="https://code.jquery.com/jquery-3.6.0.js" integrity="sha256-H+K7U5CnXl1h5ywQfKtSj8PCmoN9aaq30gDh27Xc0jk="
+        crossorigin="anonymous"></script>
+<script>
+    let form = document.getElementById("register")
+    let email = document.getElementById("email")
+    let pass = document.getElementById("pass")
+    let name = document.getElementById("name")
+    let url = document.getElementById("personal")
+    let comment = document.getElementById("comment")
+   // let confirm = document.getElementById("confirmation").checked
+    let confirm = true
+    let doy = document.getElementById("doy")
+    let gender = document.querySelector('input[name="gender"]:checked').value
+    let db;
+
+    window.onload = function () {
+        let dbReq = indexedDB.open('TezDB', 1);
+
+        form.onsubmit = register
+        dbReq.onupgradeneeded = function (event) {
+            // Set the db variable to our database so we can use it!
+            db = event.target.result;
+            let storeUser = db.createObjectStore('users', {keyPath: 'email'});
+            storeUser.createIndex('pass', 'pass', {unique: false});
+            storeUser.createIndex('name', 'name', {unique: false});
+            storeUser.createIndex('url', 'url', {unique: false});
+            storeUser.createIndex('doy', 'doy', {unique: false});
+            storeUser.createIndex('gender', 'gender', {unique: false});
+            storeUser.createIndex('comment', 'comment', {unique: false});
+
+            let storeBooking = db.createObjectStore('booking',  { keyPath: 'booking_id', autoIncrement:true });
+            storeBooking.createIndex('email', 'email', { unique: false });
+            storeBooking.createIndex('name', 'name', { unique: false });
+            storeBooking.createIndex('from', 'from', { unique: false });
+            storeBooking.createIndex('to', 'to', { unique: false });
+            storeBooking.createIndex('room_type', 'room_type', { unique: false });
+            storeBooking.createIndex('adult', 'room_type', { unique: false });
+            storeBooking.createIndex('children', 'children', { unique: false });
+        }
+        dbReq.onsuccess = function (event) {
+            db = event.target.result;
+        }
+        dbReq.onerror = function (event) {
+            alert('error opening database ' + event.target.errorCode);
+        }
+        function register(e) {
+            e.preventDefault()
+            if (confirm) {
+                let userData = {
+                    email: email.value,
+                    pass: pass.value,
+                    name: name.value,
+                    url: url.value,
+                    doy: doy.value,
+                    gender: gender,
+                    comment: comment.value
+                }
+                let transaction = db.transaction(['users'], 'readwrite')
+                let objectStore = transaction.objectStore('users')
+                objectStore.add(userData).onsuccess  = function () {
+                    alert("Registration Successful");
+
+                    window.location.href = "login.html";
+
+                };
+                transaction.oncomplete = function () {
+                    console.log('Transaction Completed');
+
+                };
+                transaction.onerror = function () {
+                    console.log('Transaction Error');
+                };
+            }
+        }
+    }
+
+    //Reference https://css-tricks.com/display-form/
+    $("form input").change(function () {
+        var numValid = 0;
+        $("form input[required]").each(function () {
+            if (this.validity.valid) {
+                numValid++;
+            }
+        });
+        const progress = $("#progress");
+        if (numValid === 0) {
+            progress.attr("value", "0");
+        }
+        if (numValid === 1) {
+            progress.attr("value", "25");
+        }
+        if (numValid === 2) {
+            progress.attr("value", "50");
+        }
+        if (numValid === 3) {
+            progress.attr("value", "75");
+        }
+        if (numValid === 4) {
+            progress.attr("value", "100");
+        }
+    });
+</script>
+</html>

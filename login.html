@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Tez Hotel</title>
+    <link rel="stylesheet" href="css/style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<div class="header">
+    <h1>Tez Hotel</h1>
+</div>
+<div class="row">
+    <div class="col-3 col-s-3 menu">
+        <ul>
+            <a href="index.html"><li>Home</li></a>
+            <a href="registration.html"><li>Registration</li></a>
+            <a href="login.html"><li>Login</li></a>
+            <a href="contact.html"><li>Contact Us</li></a>
+        </ul>
+    </div>
+    <div class="col-6 col-s-9">
+        <h2>Login</h2>
+        <div class="container">
+        <form id="login">
+            <input type="text" id="email" placeholder="Email" required/>
+            <input type="password" id="pass" placeholder="Password" required/>
+            <button id="submit">Login</button>
+            <input type="reset" id="reset" class="btn" value="Clear All">
+        </form>
+        </div>
+    </div>
+    <div class="col-3 col-s-12">
+        <div class="aside">
+            <h2>Take advantage of our seasonal specials.</h2>
+            <img src="images/side.jpg" />
+
+            <p class="text">The concept and service of the best luxury hotels in Asturias in our sophisticated Urban Double and Unique Junior Suite rooms, with the possibility of enjoying a furnished terrace in our Double Urban Loft and Unique Junior Loft Suite.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="footer">
+    <p>&copy; Copyright 2020, Tez Hotels</p>
+</div>
+
+</body>
+<script>
+    let form = document.getElementById("login")
+    let email = document.getElementById("email")
+    let pass = document.getElementById("pass")
+    let db;
+
+    window.onload = function() {
+        let request = window.indexedDB.open('TezDB', 1)
+        request.onerror = function() {
+        };
+        request.onsuccess = function() {
+            db = request.result;
+        };
+        form.onsubmit = login;
+        function login(e){
+            e.preventDefault()
+            let transaction = db.transaction(['users'], 'readonly');
+            let objectStore = transaction.objectStore('users');
+            let req = objectStore.get(email.value).onsuccess = function (e) {
+                let result = e.target.result
+                if (result !== undefined){
+                    if(pass.value === result.pass){
+                        alert("Login Success")
+                        localStorage.setItem("currentUser",email.value);
+                        localStorage.setItem("currentUserName",result.name)
+                        window.location.href = "booking.html";
+                    }
+                    else{
+                        alert("Wrong Password")
+                    }
+                }
+                else {
+                    alert("Wrong Email")
+                }
+            }
+        }
+    }
+</script>
+</html>
